@@ -40,7 +40,7 @@ type      = "object"
 [properties.wallpaper.properties.backend]
     default     = "awww"
     description = "Wallpaper backend, requires 'wallpaper.<backend>.sh' as handler script in $PATH"
-    options     = [ "awww", "pcmanfm-qt", "mpvpaper", "hyprpaper" ]
+    options     = [ "awww", "swww", "pcmanfm-qt", "mpvpaper", "hyprpaper" ]
     type        = "string"
 
 [properties.wallpaper.properties.awww]
@@ -471,6 +471,27 @@ type      = "object"
 [properties.wallbash]
     description = "wallbash configuration."
     type        = "object"
+
+[properties.wallbash.properties.profile]
+    default     = "default"
+    description = "Color curve preset for wallbash."
+    options     = [ "default", "balanced", "vibrant", "pastel", "mono" ]
+    type        = "string"
+
+[properties.wallbash.properties.custom_curve]
+    default     = ""
+    description = "Optional nine-line 'brightness saturation' override curve."
+    type        = "string"
+
+[properties.wallbash.properties.candidate_colors]
+    default     = 8
+    description = "Number of dominant candidates to evaluate before selecting the final four palette families."
+    type        = "integer"
+
+[properties.wallbash.properties.min_hue_distance]
+    default     = 0.08
+    description = "Minimum circular hue distance between selected primary families."
+    type        = "number"
 
 [properties.wallbash.properties.skip_template]
     default     = [ "" ]

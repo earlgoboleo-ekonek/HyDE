@@ -8,15 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Fixed
+
+- Wallbash: follow symlinked theme overrides in `color.set.sh` so external theme repos and dotfiles overlays render reliably.
+- Wallbash: harden cache generation with signature-aware refresh and output locking to avoid stale or duplicated `.dcol` files.
+- Core: guard `theme.switch.sh` and `wallpaper.sh` shell initialization for non-interactive helper entrypoints.
+
 ### Changed
 
 - Wallpaper: Pt. 1 of multi theming backend.
 - Hyprland: Remove `hyde.conf` as it is too brittle. Use `hyprland.conf` instead!
 - Window: Moved 'windowpin' to 'window.pin'. For consistency.
 - pyutils: Kinda clean up libnotify wrapper.
+- Wallbash: add the `balanced` profile and config-driven `profile`, `custom_curve`, `candidate_colors`, and `min_hue_distance` controls.
+- Hyprland: in theme mode, `color/hypr.sh` now emits wallpaper-accent border colors that stay compatible with `theme.dcol` overrides.
 
 ### Added
 - Window: added 'hyde-shell window.mute' to toggle window audio. This is a python implementation for 'wl-togglesink'
+- Schema: document the expanded wallbash configuration surface and `swww` as a wallpaper backend option.
 
 
 

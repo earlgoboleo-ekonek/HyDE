@@ -91,7 +91,24 @@ WALLBASH
 if grep -q "#//---Wallbash mode enabled---" "$confDir/hypr/themes/wallbash.conf"; then
     sed -i '/#\/\/---Wallbash mode enabled---/,$d' "$confDir/hypr/themes/wallbash.conf"
 fi
-if [[ $enableWallDcol -gt 0 ]]; then
+if [[ $enableWallDcol -eq 0 ]]; then
+    cat <<ON_THEME >>"$confDir/hypr/themes/wallbash.conf"
+
+#//---Wallpaper accent borders---
+general {
+    col.active_border = rgba(\$wallbash_2xa5ff) rgba(\$wallbash_1xa5ff) 45deg
+    col.inactive_border = rgba(\$wallbash_2xa3d0) rgba(665c54d0) 45deg
+}
+
+group {
+    col.border_active = rgba(\$wallbash_2xa5ff) rgba(\$wallbash_1xa5ff) 45deg
+    col.border_inactive = rgba(\$wallbash_2xa3d0) rgba(665c54d0) 45deg
+    col.border_locked_active = rgba(\$wallbash_3xa6ff) rgba(\$wallbash_4xa5ff) 45deg
+    col.border_locked_inactive = rgba(\$wallbash_2xa3d0) rgba(665c54d0) 45deg
+}
+
+ON_THEME
+elif [[ $enableWallDcol -gt 0 ]]; then
     cat <<ON_WALLBASH >>"$confDir/hypr/themes/wallbash.conf"
 
 #//---Wallbash mode enabled---
@@ -101,15 +118,15 @@ if [[ $enableWallDcol -gt 0 ]]; then
 \$COLOR_SCHEME = $COLOR_SCHEME
 
 general {
-    col.active_border = rgba(\$wallbash_pry4ff) rgba(\$wallbash_4xa1ff) 45deg
-    col.inactive_border = rgba(\$wallbash_pry1ff) rgba(\$wallbash_pry2ff) 45deg
+    col.active_border = rgba(\$wallbash_2xa5ff) rgba(\$wallbash_1xa5ff) 45deg
+    col.inactive_border = rgba(\$wallbash_2xa3ff) rgba(665c54ff) 45deg
 }
 
 group {
-    col.border_active = rgba(\$wallbash_pry4ff) rgba(\$wallbash_4xa1ff) 45deg
-    col.border_inactive = rgba(\$wallbash_pry1cc) rgba(\$wallbash_pry2cc) 45deg
-    col.border_locked_active = rgba(\$wallbash_txt3ff) rgba(\$wallbash_txt4ff) 45deg
-    col.border_locked_inactive = rgba(\$wallbash_txt1cc) rgba(\$wallbash_txt2cc) 45deg
+    col.border_active = rgba(\$wallbash_2xa5ff) rgba(\$wallbash_1xa5ff) 45deg
+    col.border_inactive = rgba(\$wallbash_2xa3cc) rgba(665c54cc) 45deg
+    col.border_locked_active = rgba(\$wallbash_3xa6ff) rgba(\$wallbash_4xa5ff) 45deg
+    col.border_locked_inactive = rgba(\$wallbash_2xa3cc) rgba(665c54cc) 45deg
 }
 
 ON_WALLBASH

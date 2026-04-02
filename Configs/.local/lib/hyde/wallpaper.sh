@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 # shellcheck disable=SC2034
-if [[ $HYDE_SHELL_INIT -ne 1 ]]; then
+if [[ ${HYDE_SHELL_INIT:-0} -ne 1 ]] || ! declare -F export_hyde_config >/dev/null; then
     eval "$(hyde-shell init)"
 else
     export_hyde_config

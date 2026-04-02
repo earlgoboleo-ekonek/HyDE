@@ -132,6 +132,10 @@ tesseract_languages = ["eng"]  # Place desired languages to use for text recogni
 
 # wallbash configuration.
 [wallbash]
+profile = "default"  # Color curve preset for wallbash.
+custom_curve = ""  # Optional nine-line 'brightness saturation' override curve.
+candidate_colors = 8  # Number of dominant candidates to evaluate before selecting the final four palette families.
+min_hue_distance = 0.08  # Minimum circular hue distance between selected primary families.
 skip_template = [""]  # Templates to skip when using wallbash.
 
 # waybar configuration.

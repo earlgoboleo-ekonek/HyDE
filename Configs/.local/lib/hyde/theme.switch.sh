@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-[[ $HYDE_SHELL_INIT -ne 1 ]] && eval "$(hyde-shell init)"
+if [[ ${HYDE_SHELL_INIT:-0} -ne 1 ]] || ! declare -F get_themes >/dev/null; then
+    eval "$(hyde-shell init)"
+fi
 [ -z "$HYDE_THEME" ] && echo "ERROR: unable to detect theme" && exit 1
 get_themes
 confDir="${XDG_CONFIG_HOME:-$HOME/.config}"

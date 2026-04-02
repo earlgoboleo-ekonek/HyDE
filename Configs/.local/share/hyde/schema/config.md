@@ -362,6 +362,10 @@ wallbash configuration.
 
 | Key | Description | Default |
 | --- | ----------- | ------- |
+| candidate_colors | Number of dominant candidates to evaluate before selecting the final four palette families. | 8 |
+| custom_curve | Optional nine-line 'brightness saturation' override curve. |  |
+| min_hue_distance | Minimum circular hue distance between selected primary families. | 0.08 |
+| profile | Color curve preset for wallbash. | default |
 | skip_template | Templates to skip when using wallbash. | [""] |
 
 ### [wallpaper]

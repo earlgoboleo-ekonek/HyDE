@@ -118,6 +118,8 @@ Look out for:
 5. **System Features**: Notifs, settings working?
 6. **Stability**: Any crashes or freezes?
 7. **Different Systems**: Test on whatever hardware you've got
+8. **Wallbash Config**: Switch `profile`, `candidate_colors`, `min_hue_distance`, and `custom_curve`, then confirm palette extraction and cache refresh still behave correctly.
+9. **Theme Overrides**: Verify `theme.dcol` overrides and symlinked external `.theme` files still apply after wallpaper/theme reloads.
 
 ## Testing Goals
 
@@ -127,6 +129,7 @@ Look out for:
 - **Regression**: Make sure we didn't break old fixes
 - **UX**: Tell us if something feels clunky
 - **Performance**: Spot any lag or resource hogs
+- **Wallbash Reentry**: Re-run wallpaper apply and theme switching multiple times to catch stale-cache, duplicate-output, or helper-init regressions.
 
 ### For Our Trusted Testers
 

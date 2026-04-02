@@ -204,9 +204,9 @@ fi
 print_log -sec "wallbash" -stat "wallbash directories" " $WALLBASH_DIRS"
 if [ "$enableWallDcol" -eq 0 ] && [[ $reload_flag -eq 1 ]]; then
     print_log -sec "wallbash" -stat "apply $dcol_mode colors" "$HYDE_THEME theme"
-    mapfile -d '' -t deployList < <(find -H "$HYDE_THEME_DIR" -type f -name "*.theme" -print0)
+    mapfile -d '' -t deployList < <(find -L "$HYDE_THEME_DIR" -type f -name "*.theme" -print0)
     while read -r pKey; do
-        fKey="$(find -H "$HYDE_THEME_DIR" -type f -name "$(basename "${pKey%.dcol}.theme")")"
+        fKey="$(find -L "$HYDE_THEME_DIR" -type f -name "$(basename "${pKey%.dcol}.theme")")"
         [ -z "$fKey" ] && deployList+=("$pKey")
     done < <(find -H "${wallbashDirs[@]}" -type f -path "*/theme*" -name "*.dcol" 2> /dev/null | awk '!seen[substr($0, match($0, /[^/]+$/))]++')
     parallel fn_wallbash {} "${wallbashDirs[@]}" ::: "${deployList[@]}" || true
