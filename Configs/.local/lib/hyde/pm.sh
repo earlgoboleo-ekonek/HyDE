@@ -32,10 +32,26 @@ usage() {
 }
 main() {
     FORCE_PM=""
-    if [ $# -gt 1 ] && [ "$1" = "--pm" ]; then
-        FORCE_PM=$2
-        shift 2
-    fi
+    NO_CONFIRM=0
+    # Parse and remove pm.sh-specific flags from anywhere in the args
+    ARGS=()
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --pm)
+                FORCE_PM=$2
+                shift 2
+                ;;
+            --no-confirm)
+                NO_CONFIRM=1
+                shift
+                ;;
+            *)
+                ARGS+=("$1")
+                shift
+                ;;
+        esac
+    done
+    set -- "${ARGS[@]}"
     if [ $# -eq 0 ]; then
         die_wrong_usage "expected <command> argument"
     fi
@@ -244,6 +260,8 @@ pm_format() {
     "${PM}_format_$1"
 }
 pacman_install() {
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
     for PKG in "$@"; do
         if aur_helpers_contain "$PKG"; then
             aur_helpers_install "$PKG"
@@ -251,16 +269,22 @@ pacman_install() {
             return
         fi
     done
-    sudo pacman -S --needed "$@"
+    sudo pacman -S --needed $extra "$@"
 }
 pacman_remove() {
-    sudo pacman -Rsc "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    sudo pacman -Rsc $extra "$@"
 }
 pacman_upgrade() {
-    sudo pacman -Su
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    sudo pacman -Su $extra
 }
 pacman_fetch() {
-    sudo pacman -Sy
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    sudo pacman -Sy $extra
 }
 pacman_info() {
     if aur_helpers_contain "$1"; then
@@ -316,16 +340,24 @@ aur_helpers_list() {
     printf "%s aur\n" $AUR_HELPERS
 }
 paru_install() {
-    paru -S --needed "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    paru -S --needed $extra "$@"
 }
 paru_remove() {
-    paru -Rsc "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    paru -Rsc $extra "$@"
 }
 paru_upgrade() {
-    paru -Su
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    paru -Su $extra
 }
 paru_fetch() {
-    paru -Sy
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    paru -Sy $extra
 }
 paru_info() {
     paru -Si --color="$PM_COLOR" "$1"
@@ -351,16 +383,24 @@ paru_file_query() {
     paru -F -- "$1"
 }
 yay_install() {
-    yay -S --needed "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    yay -S --needed $extra "$@"
 }
 yay_remove() {
-    yay -Rsc "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    yay -Rsc $extra "$@"
 }
 yay_upgrade() {
-    yay -Su
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    yay -Su $extra
 }
 yay_fetch() {
-    yay -Sy
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--noconfirm"
+    yay -Sy $extra
 }
 yay_info() {
     yay -Si --color="$PM_COLOR" "$1"
@@ -389,13 +429,19 @@ yay_file_query() {
     yay -F -- "$1"
 }
 apt_install() {
-    sudo apt install "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo apt install $extra "$@"
 }
 apt_remove() {
-    sudo apt remove "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo apt remove $extra "$@"
 }
 apt_upgrade() {
-    sudo apt upgrade
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo apt upgrade $extra
 }
 apt_fetch() {
     sudo apt update
@@ -427,16 +473,22 @@ apt_file_query() {
     apt-file search "$1"
 }
 dnf_install() {
-    sudo dnf install "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo dnf install $extra "$@"
 }
 dnf_remove() {
-    sudo dnf remove "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo dnf remove $extra "$@"
 }
 dnf_fetch() {
     sudo dnf check-update || true
 }
 dnf_upgrade() {
-    sudo dnf upgrade
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    sudo dnf upgrade $extra
 }
 dnf_info() {
     dnf info -q --color="$PM_COLOR" "$1" | grep :
@@ -465,16 +517,22 @@ dnf_file_query() {
     dnf provides "$1"
 }
 zypper_install() {
-    sudo zypper install --no-confirm "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo zypper install $extra "$@"
 }
 zypper_remove() {
-    sudo zypper remove --no-confirm "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo zypper remove $extra "$@"
 }
 zypper_fetch() {
     sudo zypper refresh
 }
 zypper_upgrade() {
-    sudo zypper update
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo zypper update $extra
 }
 zypper_info() {
     zypper info "$1" | skip_table_header
@@ -500,16 +558,22 @@ zypper_file_query() {
     zypper se --provides "$1"
 }
 apk_install() {
-    sudo apk add "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo apk add $extra "$@"
 }
 apk_remove() {
-    sudo apk del "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo apk del $extra "$@"
 }
 apk_fetch() {
     sudo apk update
 }
 apk_upgrade() {
-    sudo apk upgrade
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="--no-confirm"
+    sudo apk upgrade $extra
 }
 apk_info() {
     apk info "$1"
@@ -619,16 +683,22 @@ scoop_file_query() {
     exit 1
 }
 flatpak_install() {
-    flatpak install -y "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    flatpak install $extra "$@"
 }
 flatpak_remove() {
-    flatpak uninstall -y "$@"
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    flatpak uninstall $extra "$@"
 }
 flatpak_fetch() {
     flatpak update --appstream
 }
 flatpak_upgrade() {
-    flatpak update -y
+    local extra=""
+    [ "$NO_CONFIRM" = 1 ] && extra="-y"
+    flatpak update $extra
 }
 flatpak_info() {
     flatpak info "$1"

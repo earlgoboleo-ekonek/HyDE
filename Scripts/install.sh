@@ -299,7 +299,7 @@ if [ ${flg_Restore} -eq 1 ]; then
 
 		if [[ -n "${migrationFile}" && -f "${migrationDir}/${migrationFile}" ]]; then
 			echo "Found migration file: ${migrationFile}"
-			sh "${migrationDir}/${migrationFile}"
+			sh "${migrationDir}/${migrationFile}" || { true && print_log -warn "Migration" "Failed to execute ${migrationFile}"; }
 		else
 			echo "No migration file found in ${migrationDir}. Skipping migrations."
 		fi

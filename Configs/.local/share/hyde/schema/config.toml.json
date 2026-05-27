@@ -22,7 +22,8 @@
                         "swww",
                         "pcmanfm-qt",
                         "mpvpaper",
-                        "hyprpaper"
+                        "hyprpaper",
+                        "waydeeper"
                     ],
                     "type": "string"
                 },
@@ -56,6 +57,76 @@
                             "type": "string"
                         }
                     }
+                },
+                "waydeeper": {
+                    "description": "waydeeper 3D parallax wallpaper configuration.",
+                    "type": "object",
+                    "properties": {
+                        "strength": {
+                            "default": 0.02,
+                            "description": "Sets both X & Y parallax strength.",
+                            "type": "number"
+                        },
+                        "strength_x": {
+                            "default": 0.02,
+                            "description": "X-axis parallax strength.",
+                            "type": "number"
+                        },
+                        "strength_y": {
+                            "default": 0.02,
+                            "description": "Y-axis parallax strength.",
+                            "type": "number"
+                        },
+                        "smooth_animation": {
+                            "default": true,
+                            "description": "Enables smooth easing for animation.",
+                            "type": "boolean"
+                        },
+                        "animation_speed": {
+                            "default": 0.05,
+                            "description": "Animation speed multiplier.",
+                            "type": "number"
+                        },
+                        "fps": {
+                            "default": 60,
+                            "description": "Frame rate (30 or 60).",
+                            "options": [
+                                30,
+                                60
+                            ],
+                            "type": "integer"
+                        },
+                        "active_delay": {
+                            "default": 150,
+                            "description": "Delay (ms) before animation starts after mouse enters wallpaper surface.",
+                            "type": "integer"
+                        },
+                        "idle_timeout": {
+                            "default": 5000,
+                            "description": "Stops animation (ms) after mouse idle.",
+                            "type": "integer"
+                        },
+                        "invert_depth": {
+                            "default": false,
+                            "description": "Inverts depth interpretation.",
+                            "type": "boolean"
+                        },
+                        "model": {
+                            "default": "depth-anything-v3-base",
+                            "description": "ONNX depth model: depth-anything-v3-base, midas-small, depth-pro-q4.",
+                            "options": [
+                                "depth-anything-v3-base",
+                                "midas-small",
+                                "depth-pro-q4"
+                            ],
+                            "type": "string"
+                        },
+                        "regenerate": {
+                            "default": false,
+                            "description": "Forces regeneration of depth maps & meshes.",
+                            "type": "boolean"
+                        }
+                    }
                 }
             }
         },
@@ -69,7 +140,7 @@
                     "type": "integer"
                 },
                 "hyprlock": {
-                    "description": "'hyprlock.sh select' configuration.",
+                    "description": "'hyde-shell hyprlock select' configuration.",
                     "type": "object",
                     "properties": {
                         "scale": {
@@ -870,6 +941,56 @@
                 }
             }
         },
+        "hyprlock": {
+            "description": "hyprlock configuration.",
+            "type": "object",
+            "properties": {
+                "hide_cursor": {
+                    "default": false,
+                    "description": "Hides the cursor instead of making it visible.",
+                    "type": "boolean"
+                },
+                "ignore_empty_input": {
+                    "default": false,
+                    "description": "Skips validation when no password is provided.",
+                    "type": "boolean"
+                },
+                "immediate_render": {
+                    "default": false,
+                    "description": "Makes hyprlock immediately start to draw widgets.",
+                    "type": "boolean"
+                },
+                "text_trim": {
+                    "default": true,
+                    "description": "Sets if the text should be trimmed, useful to avoid trailing newline in commands output.",
+                    "type": "boolean"
+                },
+                "fractional_scaling": {
+                    "default": 2,
+                    "description": "Whether to use fractional scaling. 0: disabled, 1: enabled, 2: auto.",
+                    "options": [
+                        0,
+                        1,
+                        2
+                    ],
+                    "type": "integer"
+                },
+                "screencopy_mode": {
+                    "default": 0,
+                    "description": "Selects screencopy mode: 0 gpu accelerated, 1 cpu based (slow).",
+                    "options": [
+                        0,
+                        1
+                    ],
+                    "type": "integer"
+                },
+                "fail_timeout": {
+                    "default": 2000,
+                    "description": "Milliseconds until the UI resets after a failed auth attempt.",
+                    "type": "integer"
+                }
+            }
+        },
         "notification": {
             "description": "Notification script configuration.",
             "type": "object",
@@ -903,16 +1024,6 @@
                 "explorer": {
                     "default": "dolphin",
                     "description": "File manager.",
-                    "type": "string"
-                },
-                "idle": {
-                    "default": "hypridle",
-                    "description": "Idle manager.",
-                    "type": "string"
-                },
-                "blue_light_filter": {
-                    "default": "hyprsunset",
-                    "description": "Blue-light filter.",
                     "type": "string"
                 },
                 "lockscreen": {
@@ -1007,6 +1118,117 @@
                 }
             }
         },
+        "desktop": {
+            "description": "Generic desktop/compositor configuration. Compositor-agnostic counterpart to [hyprland]; use this for cross-compositor support (Hyprland, Sway, niri, etc.).",
+            "type": "object",
+            "properties": {
+                "browser": {
+                    "default": "firefox",
+                    "description": "Default browser.",
+                    "type": "string"
+                },
+                "editor": {
+                    "default": "code",
+                    "description": "Default editor.",
+                    "type": "string"
+                },
+                "explorer": {
+                    "default": "dolphin",
+                    "description": "Default file manager.",
+                    "type": "string"
+                },
+                "lockscreen": {
+                    "default": "lockscreen.sh",
+                    "description": "Lockscreen command.",
+                    "type": "string"
+                },
+                "terminal": {
+                    "default": "kitty",
+                    "description": "Default terminal.",
+                    "type": "string"
+                },
+                "quickapps": {
+                    "default": "kitty",
+                    "description": "Quick apps command.",
+                    "type": "string"
+                },
+                "bar": {
+                    "default": "waybar",
+                    "description": "Status bar.",
+                    "type": "string"
+                },
+                "color_scheme": {
+                    "default": "prefer-dark",
+                    "description": "Color scheme.",
+                    "type": "string"
+                },
+                "gtk_theme": {
+                    "default": "Wallbash-Gtk",
+                    "description": "GTK theme.",
+                    "type": "string"
+                },
+                "icon_theme": {
+                    "default": "Tela-circle-dracula",
+                    "description": "Icon theme.",
+                    "type": "string"
+                },
+                "cursor_size": {
+                    "default": 24,
+                    "description": "Cursor size.",
+                    "type": "integer"
+                },
+                "cursor_theme": {
+                    "default": "Bibata-Modern-Ice",
+                    "description": "Cursor theme.",
+                    "type": "string"
+                },
+                "button_layout": {
+                    "default": "",
+                    "description": "Button layout. (gtk only)",
+                    "type": "string"
+                },
+                "document_font_size": {
+                    "default": 10,
+                    "description": "Document font size.",
+                    "type": "integer"
+                },
+                "font": {
+                    "default": "Canterell",
+                    "description": "Default font.",
+                    "type": "string"
+                },
+                "font_antialiasing": {
+                    "default": "rgba",
+                    "description": "Font antialiasing.",
+                    "type": "string"
+                },
+                "font_hinting": {
+                    "default": "full",
+                    "description": "Font hinting.",
+                    "type": "string"
+                },
+                "font_size": {
+                    "default": 10,
+                    "description": "Font size.",
+                    "type": "integer"
+                },
+                "monospace_font": {
+                    "default": "CaskaydiaCove Nerd Font Mono",
+                    "description": "Monospace font.",
+                    "type": "string"
+                },
+                "monospace_font_size": {
+                    "default": 9,
+                    "description": "Monospace font size.",
+                    "type": "integer"
+                },
+                "background_path": {
+                    "default": "",
+                    "description": "Lockscreen background path.",
+                    "type": "string"
+                }
+            }
+        },
         "qt5": {
             "description": "Qt5 configuration.",
             "type": "object",
@@ -1087,80 +1309,170 @@
             "description": "Hyprland start configuration.",
             "type": "object",
             "properties": {
-                "apptray_bluetooth": {
-                    "default": "blueman-applet",
-                    "description": "Bluetooth applet.",
-                    "type": "string"
-                },
-                "auth_dialogue": {
-                    "default": "polkitkdeauth.sh",
-                    "description": "Authentication dialogue.",
-                    "type": "string"
-                },
-                "bar": {
-                    "default": "hyde-shell waybar --watch",
-                    "description": "Bar.",
-                    "type": "string"
-                },
-                "battery_notify": {
-                    "default": "batterynotify.sh",
-                    "description": "Battery notification script.",
-                    "type": "string"
-                },
                 "dbus_share_picker": {
-                    "default": "dbus-update-activation-environment --systemd --all",
+                    "default": "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME",
                     "description": "DBus share picker.",
                     "type": "string"
                 },
+                "systemd_share_picker": {
+                    "default": "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME",
+                    "description": "Systemd share picker.",
+                    "type": "string"
+                },
+                "xdg_portal_reset": {
+                    "default": "hyde-shell resetxdgportal.sh",
+                    "description": "XDG portal reset script.",
+                    "type": "string"
+                },
+                "auth_dialogue": {
+                    "default": "hyde-shell app -t service -- polkitkdeauth.sh",
+                    "description": "Authentication dialogue.",
+                    "type": "string"
+                },
                 "idle_daemon": {
-                    "default": "hypridle",
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle",
                     "description": "Idle daemon.",
                     "type": "string"
                 },
                 "blue_light_filter_daemon": {
-                    "default": "hyprsunset",
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset",
                     "description": "Blue-light filter daemon.",
                     "type": "string"
                 },
-
-                "image_clipboard": {
-                    "default": "wl-paste --type image --watch cliphist store",
-                    "description": "Image clipboard.",
-                    "type": "string"
-                },
-                "network_manager": {
-                    "default": "nm-applet --indicator",
-                    "description": "Network manager.",
-                    "type": "string"
-                },
-                "notifications": {
-                    "default": "swaync",
-                    "description": "Notifications.",
-                    "type": "string"
-                },
-                "removable_media": {
-                    "default": "udiskie --no-automount --smart-tray",
-                    "description": "Removable media manager.",
-                    "type": "string"
-                },
-                "systemd_share_picker": {
-                    "default": "systemctl --user import-environment QT_QPA_PLATFORMTHEME WAYLAND_DISPLAY XDG_CURRENT_DESKTOP",
-                    "description": "Systemd share picker.",
-                    "type": "string"
-                },
                 "text_clipboard": {
-                    "default": "wl-paste --type text --watch cliphist store",
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store",
                     "description": "Text clipboard.",
                     "type": "string"
                 },
+                "image_clipboard": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store",
+                    "description": "Image clipboard.",
+                    "type": "string"
+                },
+                "clipboard_persist": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular",
+                    "description": "Clipboard persist daemon.",
+                    "type": "string"
+                },
                 "wallpaper": {
-                    "default": "$scrPath/wallpaper.sh --global",
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global",
                     "description": "Wallpaper script.",
                     "type": "string"
                 },
+                "bar": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch",
+                    "description": "Bar.",
+                    "type": "string"
+                },
+                "notifications": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst",
+                    "description": "Notifications.",
+                    "type": "string"
+                },
+                "battery_notify": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh",
+                    "description": "Battery notification script.",
+                    "type": "string"
+                },
+                "applet_network_manager": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator",
+                    "description": "Network manager.",
+                    "type": "string"
+                },
+                "applet_removable_media": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray",
+                    "description": "Removable media manager.",
+                    "type": "string"
+                },
+                "applet_bluetooth": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet",
+                    "description": "Bluetooth applet.",
+                    "type": "string"
+                }
+            }
+        },
+        "desktop.start": {
+            "description": "Generic desktop autostart configuration. Compositor-agnostic counterpart to [hyprland-start]; use this for cross-compositor support (Hyprland, Sway, niri, etc.).",
+            "type": "object",
+            "properties": {
+                "dbus_share_picker": {
+                    "default": "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME",
+                    "description": "DBus share picker (for XDG portal / XDPH).",
+                    "type": "string"
+                },
+                "systemd_share_picker": {
+                    "default": "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME",
+                    "description": "Systemd share picker (for XDG portal / XDPH).",
+                    "type": "string"
+                },
                 "xdg_portal_reset": {
-                    "default": "resetxdgportal.sh",
+                    "default": "hyde-shell resetxdgportal.sh",
                     "description": "XDG portal reset script.",
+                    "type": "string"
+                },
+                "auth_dialogue": {
+                    "default": "hyde-shell app -t service -- polkitkdeauth.sh",
+                    "description": "Authentication dialogue.",
+                    "type": "string"
+                },
+                "idle_daemon": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle",
+                    "description": "Idle daemon.",
+                    "type": "string"
+                },
+                "blue_light_filter_daemon": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset",
+                    "description": "Blue-light filter daemon.",
+                    "type": "string"
+                },
+                "text_clipboard": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store",
+                    "description": "Text clipboard daemon.",
+                    "type": "string"
+                },
+                "image_clipboard": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store",
+                    "description": "Image clipboard daemon.",
+                    "type": "string"
+                },
+                "clipboard_persist": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular",
+                    "description": "Clipboard persist daemon.",
+                    "type": "string"
+                },
+                "wallpaper": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global",
+                    "description": "Wallpaper script.",
+                    "type": "string"
+                },
+                "bar": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch",
+                    "description": "Bar.",
+                    "type": "string"
+                },
+                "notifications": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst",
+                    "description": "Notification daemon.",
+                    "type": "string"
+                },
+                "battery_notify": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh",
+                    "description": "Battery notification script.",
+                    "type": "string"
+                },
+                "applet_network_manager": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator",
+                    "description": "Network manager applet.",
+                    "type": "string"
+                },
+                "applet_removable_media": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray",
+                    "description": "Removable media applet.",
+                    "type": "string"
+                },
+                "applet_bluetooth": {
+                    "default": "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet",
+                    "description": "Bluetooth applet.",
                     "type": "string"
                 }
             }

@@ -22,11 +22,13 @@ export iconsDir="$ICONS_DIR"
 export themesDir="$THEMES_DIR"
 export fontsDir="$FONTS_DIR"
 export hashMech="sha1sum"
+
 send_notifs() {
     local args=("$@")
     notify-send "${args[@]}" &
 }
 print_log() {
+    [[ "${PRINT_LOG}" == "false" ]] && return 0
     while (("$#")); do
         case "$1" in
         -r | +r)
@@ -93,6 +95,8 @@ print_log() {
     done
     echo "" >&2
 }
+
+
 get_hashmap() {
     unset wallHash
     unset wallList

@@ -95,6 +95,57 @@ Cava visualizer configuration.
 | standby | Standby character for cava. | 🎶 |
 | width | Width of the cava output. | 20 |
 
+### [desktop]
+
+Generic desktop/compositor configuration. Compositor-agnostic counterpart to [hyprland]; use this for cross-compositor support (Hyprland, Sway, niri, etc.).
+
+| Key | Description | Default |
+| --- | ----------- | ------- |
+| background_path | Lockscreen background path. |  |
+| bar | Status bar. | waybar |
+| browser | Default browser. | firefox |
+| button_layout | Button layout. (gtk only) |  |
+| color_scheme | Color scheme. | prefer-dark |
+| cursor_size | Cursor size. | 24 |
+| cursor_theme | Cursor theme. | Bibata-Modern-Ice |
+| document_font_size | Document font size. | 10 |
+| editor | Default editor. | code |
+| explorer | Default file manager. | dolphin |
+| font | Default font. | Canterell |
+| font_antialiasing | Font antialiasing. | rgba |
+| font_hinting | Font hinting. | full |
+| font_size | Font size. | 10 |
+| gtk_theme | GTK theme. | Wallbash-Gtk |
+| icon_theme | Icon theme. | Tela-circle-dracula |
+| lockscreen | Lockscreen command. | lockscreen.sh |
+| monospace_font | Monospace font. | CaskaydiaCove Nerd Font Mono |
+| monospace_font_size | Monospace font size. | 9 |
+| quickapps | Quick apps command. | kitty |
+| terminal | Default terminal. | kitty |
+
+### [desktop.start]
+
+Generic desktop autostart configuration. Compositor-agnostic counterpart to [hyprland-start]; use this for cross-compositor support (Hyprland, Sway, niri, etc.).
+
+| Key | Description | Default |
+| --- | ----------- | ------- |
+| applet_bluetooth | Bluetooth applet. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet |
+| applet_network_manager | Network manager applet. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator |
+| applet_removable_media | Removable media applet. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray |
+| auth_dialogue | Authentication dialogue. | hyde-shell app -t service -- polkitkdeauth.sh |
+| bar | Bar. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch |
+| battery_notify | Battery notification script. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh |
+| blue_light_filter_daemon | Blue-light filter daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset |
+| clipboard_persist | Clipboard persist daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular |
+| dbus_share_picker | DBus share picker (for XDG portal / XDPH). | dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME |
+| idle_daemon | Idle daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle |
+| image_clipboard | Image clipboard daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store |
+| notifications | Notification daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst |
+| systemd_share_picker | Systemd share picker (for XDG portal / XDPH). | systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME |
+| text_clipboard | Text clipboard daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store |
+| wallpaper | Wallpaper script. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global |
+| xdg_portal_reset | XDG portal reset script. | hyde-shell resetxdgportal.sh |
+
 ### [gtk3]
 
 GTK3 configuration.
@@ -112,6 +163,7 @@ Hyprland configuration.
 | --- | ----------- | ------- |
 | background_path | LockScreen's Background path. |  |
 | bar | Bar. | waybar |
+| blue_light_filter | Blue-light filter. | hyprsunset |
 | browser | Browser. | firefox |
 | button_layout | Button layout. (gtk only) |  |
 | color_scheme | Color scheme. | prefer-dark |
@@ -126,8 +178,6 @@ Hyprland configuration.
 | font_size | Font size. | 10 |
 | gtk_theme | GTK theme. | Wallbash-Gtk |
 | icon_theme | Icon theme. | Tela-circle-dracula |
-| idle | Idle manager. | hypridle |
-| blue_light_filter | Blue-light filter. | hyprsunset |
 | lockscreen | Lockscreen. | lockscreen.sh |
 | monospace_font | Monospace font. | CaskaydiaCove Nerd Font Mono |
 | monospace_font_size | Monospace font size. | 9 |
@@ -140,21 +190,36 @@ Hyprland start configuration.
 
 | Key | Description | Default |
 | --- | ----------- | ------- |
-| apptray_bluetooth | Bluetooth applet. | blueman-applet |
-| auth_dialogue | Authentication dialogue. | polkitkdeauth.sh |
-| bar | Bar. | hyde-shell waybar --watch |
-| battery_notify | Battery notification script. | batterynotify.sh |
-| dbus_share_picker | DBus share picker. | dbus-update-activation-environment --systemd --all |
-| idle_daemon | Idle daemon. | hypridle |
-| blue_light_filter_daemon | Blue-light filter daemon. | hyprsunset |
-| image_clipboard | Image clipboard. | wl-paste --type image --watch cliphist store |
-| network_manager | Network manager. | nm-applet --indicator |
-| notifications | Notifications. | swaync |
-| removable_media | Removable media manager. | udiskie --no-automount --smart-tray |
-| systemd_share_picker | Systemd share picker. | systemctl --user import-environment QT_QPA_PLATFORMTHEME WAYLAND_DISPLAY XDG_CURRENT_DESKTOP |
-| text_clipboard | Text clipboard. | wl-paste --type text --watch cliphist store |
-| wallpaper | Wallpaper script. | $scrPath/wallpaper.sh --global |
-| xdg_portal_reset | XDG portal reset script. | resetxdgportal.sh |
+| applet_bluetooth | Bluetooth applet. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet |
+| applet_network_manager | Network manager. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator |
+| applet_removable_media | Removable media manager. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray |
+| auth_dialogue | Authentication dialogue. | hyde-shell app -t service -- polkitkdeauth.sh |
+| bar | Bar. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch |
+| battery_notify | Battery notification script. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh |
+| blue_light_filter_daemon | Blue-light filter daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset |
+| clipboard_persist | Clipboard persist daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular |
+| dbus_share_picker | DBus share picker. | dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME |
+| idle_daemon | Idle daemon. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle |
+| image_clipboard | Image clipboard. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store |
+| notifications | Notifications. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst |
+| systemd_share_picker | Systemd share picker. | systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME |
+| text_clipboard | Text clipboard. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store |
+| wallpaper | Wallpaper script. | hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global |
+| xdg_portal_reset | XDG portal reset script. | hyde-shell resetxdgportal.sh |
+
+### [hyprlock]
+
+hyprlock configuration.
+
+| Key | Description | Default |
+| --- | ----------- | ------- |
+| fail_timeout | Milliseconds until the UI resets after a failed auth attempt. | 2000 |
+| fractional_scaling | Whether to use fractional scaling. 0: disabled, 1: enabled, 2: auto. | 2 |
+| hide_cursor | Hides the cursor instead of making it visible. | false |
+| ignore_empty_input | Skips validation when no password is provided. | false |
+| immediate_render | Makes hyprlock immediately start to draw widgets. | false |
+| screencopy_mode | Selects screencopy mode: 0 gpu accelerated, 1 cpu based (slow). | 0 |
+| text_trim | Sets if the text should be trimmed, useful to avoid trailing newline in commands output. | true |
 
 ### [mediaplayer]
 
@@ -255,7 +320,7 @@ glyph-picker.sh configuration.
 
 ### [rofi.hyprlock]
 
-'hyprlock.sh select' configuration.
+'hyde-shell hyprlock select' configuration.
 
 | Key | Description | Default |
 | --- | ----------- | ------- |
@@ -388,6 +453,24 @@ wallpaper select configuration.
 | transition_default | Transition type for default wallpaper. | grow |
 | transition_next | Transition type for next wallpaper. | grow |
 | transition_prev | Transition type for previous wallpaper. | outer |
+
+### [wallpaper.waydeeper]
+
+waydeeper 3D parallax wallpaper configuration.
+
+| Key | Description | Default |
+| --- | ----------- | ------- |
+| active_delay | Delay (ms) before animation starts after mouse enters wallpaper surface. | 150 |
+| animation_speed | Animation speed multiplier. | 0.05 |
+| fps | Frame rate (30 or 60). | 60 |
+| idle_timeout | Stops animation (ms) after mouse idle. | 5000 |
+| invert_depth | Inverts depth interpretation. | false |
+| model | ONNX depth model: depth-anything-v3-base, midas-small, depth-pro-q4. | depth-anything-v3-base |
+| regenerate | Forces regeneration of depth maps & meshes. | false |
+| smooth_animation | Enables smooth easing for animation. | true |
+| strength | Sets both X & Y parallax strength. | 0.02 |
+| strength_x | X-axis parallax strength. | 0.02 |
+| strength_y | Y-axis parallax strength. | 0.02 |
 
 ### [waybar]
 

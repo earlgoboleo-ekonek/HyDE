@@ -513,20 +513,38 @@ def is_waybar_running_for_current_user():
 
 
 def run_waybar():
-    """Run Waybar using hyde-shell app with systemd unit, let systemd handle logging."""
-    # check_cmd = ["systemctl", "--user", "is-active", "--quiet", UNIT_NAME]
-    run_cmd = ["hyde-shell", "app", "-u", UNIT_NAME, "-t", "service", "--", "waybar"]
-    # Check if the unit is active
-    # result = subprocess.run(check_cmd)
+    """Run Waybar as a transient systemd user service."""
     if is_waybar_running_for_current_user():
-        logger.debug(f"Waybar launched via systemd unit: {UNIT_NAME}")
-    else:
-        subprocess.run(run_cmd)
-        logger.debug(f"Waybar systemd unit already active: {UNIT_NAME}")
+        logger.debug(f"Waybar unit already active: {UNIT_NAME}")
+        return
+    # Unit may already exist (inactive) from a previous --watch launch; try starting it first
+    result = subprocess.run(
+        ["systemctl", "--user", "start", UNIT_NAME],
+        capture_output=True,
+    )
+    if result.returncode == 0:
+        logger.debug(f"Started existing unit {UNIT_NAME}")
+        return
+    # Unit doesn't exist yet, create it via systemd-run
+    subprocess.run(
+        [
+            "systemd-run",
+            "--user",
+            f"--unit={UNIT_NAME}",
+            "--slice=app-graphical.slice",
+            "--property=Type=exec",
+            "--property=ExitType=cgroup",
+            "--property=After=graphical-session.target",
+            "--property=PartOf=graphical-session.target",
+            "--quiet",
+            "--",
+            "waybar",
+        ]
+    )
+    logger.debug(f"Launched {UNIT_NAME}")
 
 
 def kill_waybar():
-    """Kill only the current user's Waybar process."""
     """Stop Waybar systemd unit for current session desktop."""
     subprocess.run(["systemctl", "--user", "stop", UNIT_NAME])
     logger.debug(f"Stopped Waybar systemd unit: {UNIT_NAME}")
@@ -534,30 +552,21 @@ def kill_waybar():
 
 def restart_waybar():
     """Restart Waybar systemd unit for current session desktop."""
-    kill_waybar()
-    run_waybar()
+    # systemctl restart works on both active and inactive loaded units
+    result = subprocess.run(
+        ["systemctl", "--user", "restart", UNIT_NAME],
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        # Unit not loaded at all, create it fresh
+        run_waybar()
     logger.debug(f"Restarted Waybar systemd unit: {UNIT_NAME}")
 
 
 def kill_waybar_and_watcher():
-    """Kill all Waybar instances and watcher scripts for the current user."""
+    """Kill Waybar systemd unit for current session."""
     kill_waybar()
     logger.debug("Killed Waybar processes for current user.")
-
-    try:
-        watcher_unit = f"hyde-{os.getenv('XDG_SESSION_DESKTOP')}-waybar-watcher.service"
-        result = subprocess.run(
-            ["systemctl", "--user", "is-active", watcher_unit],
-            capture_output=True,
-            text=True,
-        )
-
-        if result.returncode == 0:
-            subprocess.run(["systemctl", "--user", "stop", watcher_unit])
-            # kill_waybar()
-            logger.debug("Killed all waybar.py watcher scripts for current user.")
-    except Exception as e:
-        logger.error(f"Error killing waybar.py processes: {e}")
 
 
 def ensure_directory_exists(filepath):
@@ -1150,27 +1159,13 @@ def update_border_radius():
                 logger.debug(f"Theme directory not found at {theme_dir}")
 
     if not border_radius:
-        logger.debug("Trying to get border radius from hyprctl")
-        result = subprocess.run(
-            ["hyprctl", "getoption", "decoration:rounding", "-j"],
-            capture_output=True,
-            text=True,
-        )
-
-        if result.returncode == 0:
-            logger.debug(f"hyprctl command succeeded: {result.stdout}")
-            try:
-                data = json.loads(result.stdout)
-                border_radius = data.get("int", 3)
-                logger.debug(f"Parsed border radius from hyprctl: {border_radius}")
-            except (json.JSONDecodeError, ValueError) as e:
-                logger.error(f"Failed to parse JSON output: {e}")
-                border_radius = 3
-                logger.debug(f"Using fallback border radius: {border_radius}")
-        else:
-            logger.error(f"Failed to run hyprctl command: {result.stderr}")
+        logger.debug("Trying to get border radius from Hyprland IPC")
+        try:
+            border_radius = HYPRLAND.HyprctlWrapper.getoption("decoration:rounding")
+            logger.debug(f"Parsed border radius from Hyprland IPC: {border_radius}")
+        except (ValueError, EnvironmentError, OSError) as e:
+            logger.error(f"Failed to get border radius from Hyprland IPC: {e}")
             border_radius = 2
-            logger.debug(f"Using second fallback border radius: {border_radius}")
 
     if border_radius is None or border_radius < 1:
         border_radius = 2
@@ -1262,28 +1257,28 @@ def update_style(style_path):
 
 
 def watch_waybar():
-    def handle_usr1(sig, frame):
-        # Implement your hide/toggle logic here
-        notify.send(
-            "Waybar",
-            "Toggling Waybar hidden state",
-            replace_id=9,
-        )
-        logger.info("Received SIGUSR1, toggled Waybar hidden state")
-
-    signal.signal(signal.SIGUSR1, handle_usr1)
-    signal.signal(signal.SIGTERM, signal_handler)
-    signal.signal(signal.SIGINT, signal_handler)
-
-    while True:
-        try:
-            # Only check for current user's Waybar
-            if not is_waybar_running_for_current_user():
-                run_waybar()
-                logger.debug("Waybar restarted for current user")
-        except Exception as e:
-            logger.error(f"Error monitoring Waybar: {e}")
-        time.sleep(2)
+    """Launch Waybar as a persistent systemd service with auto-restart. Exits immediately."""
+    if is_waybar_running_for_current_user():
+        logger.debug(f"Waybar unit already active: {UNIT_NAME}")
+        return
+    subprocess.run(
+        [
+            "systemd-run",
+            "--user",
+            f"--unit={UNIT_NAME}",
+            "--slice=app-graphical.slice",
+            "--property=Type=exec",
+            "--property=ExitType=cgroup",
+            "--property=Restart=always",
+            "--property=RestartSec=1",
+            "--property=After=graphical-session.target",
+            "--property=PartOf=graphical-session.target",
+            "--quiet",
+            "--",
+            "waybar",
+        ]
+    )
+    logger.debug(f"Launched {UNIT_NAME} with Restart=always")
 
 
 def main():

@@ -5,7 +5,7 @@ if ! source "$(which hyde-shell)"; then
     exit 1
 fi
 sunsetConf="${XDG_STATE_HOME:-$HOME/.local/state}/hyde/hyprsunset"
-default_temp=6500
+default_temp=6000
 default_gamma=100
 temp_step=500
 gamma_step=5
@@ -15,12 +15,26 @@ min_gamma=20
 max_gamma=100
 notify="${waybar_temperature_notification:-true}"
 if [ ! -f "$sunsetConf" ]; then
-    printf "%d|%d|%d\n" "$default_temp" "$default_gamma" 1 > "$sunsetConf"
+    printf "%d|%d|%d|%d\n" "$default_temp" "$default_gamma" 1 "$default_temp" >"$sunsetConf"
 fi
-IFS='|' read -r currentTemp currentGamma toggle_mode < "$sunsetConf"
+IFS='|' read -r currentTemp currentGamma toggle_mode identity_temp <"$sunsetConf"
+
 [ -z "$currentTemp" ] && currentTemp=$default_temp
 [ -z "$currentGamma" ] && currentGamma=$default_gamma
 [ -z "$toggle_mode" ] && toggle_mode=1
+[ -z "$identity_temp" ] && identity_temp=$default_temp
+
+# Keep state strictly numeric in the 4-field format.
+if ! [[ $currentTemp =~ ^[0-9]+$ ]]; then
+    currentTemp=$default_temp
+fi
+if ! [[ $identity_temp =~ ^[0-9]+$ ]]; then
+    identity_temp=$default_temp
+fi
+
+save_state() {
+    printf "%d|%d|%d|%d\n" "$currentTemp" "$currentGamma" "$toggle_mode" "$identity_temp" >"$sunsetConf"
+}
 send_notification() {
     local title message
     if [ "$action" = "toggle" ]; then
@@ -46,9 +60,9 @@ send_notification() {
 send_signal_to_process() {
     if [ -n "$signal_proc" ]; then
         if [[ $signal_proc == *","* ]]; then
-            IFS=',' read -r process signal <<< "$signal_proc"
+            IFS=',' read -r process signal <<<"$signal_proc"
         elif [[ $signal_proc == *":"* ]]; then
-            IFS=':' read -r process signal <<< "$signal_proc"
+            IFS=':' read -r process signal <<<"$signal_proc"
         else
             echo "Error: Invalid sigproc format. Use PROCESS,SIGNAL or PROCESS:SIGNAL"
             return 1
@@ -57,8 +71,8 @@ send_signal_to_process() {
             echo "Error: Signal must be a number"
             return 1
         fi
-        if pgrep -x "$process" > /dev/null; then
-            pkill -RTMIN+"$signal" "$process" 2> /dev/null || echo "Warning: Failed to send signal $signal to $process"
+        if pgrep -x "$process" >/dev/null; then
+            pkill -RTMIN+"$signal" "$process" 2>/dev/null || echo "Warning: Failed to send signal $signal to $process"
         else
             echo "Warning: Process '$process' not found"
         fi
@@ -76,11 +90,15 @@ clamp_gamma() {
     [ "$gamma" -gt "$max_gamma" ] && gamma=$max_gamma
     echo "$gamma"
 }
+apply_temp() {
+    local temp=$1
+    hyprctl --quiet hyprsunset temperature "$temp"
+}
 get_running_temp() {
-    hyprctl hyprsunset temperature 2> /dev/null || echo "$default_temp"
+    hyprctl hyprsunset temperature 2>/dev/null || echo "$default_temp"
 }
 show_help() {
-    cat << EOF
+    cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Options:
@@ -124,60 +142,61 @@ custom_step=""
 newTemp=""
 newGamma=""
 signal_proc=""
+identity_requested=false
 while true; do
     case "$1" in
-        --cm)
-            color_mode="$2"
-            if [ "$color_mode" != "temp" ] && [ "$color_mode" != "gamma" ]; then
-                echo "Error: Color mode must be 'temp' or 'gamma'"
-                exit 1
-            fi
-            shift 2
-            ;;
-        -i | --increase)
-            action="increase"
-            custom_step="$2"
-            shift 2
-            ;;
-        -d | --decrease)
-            action="decrease"
-            custom_step="$2"
-            shift 2
-            ;;
-        -s | --set)
-            action="set"
-            custom_step="$2"
-            shift 2
-            ;;
-        -r | --read)
-            action="read"
-            shift
-            ;;
-        -t | --toggle)
-            action="toggle"
-            shift
-            ;;
-        -q | --quiet)
-            notify=false
-            shift
-            ;;
-        -P | --sigproc)
-            signal_proc="$2"
-            shift 2
-            ;;
-        -h | --help)
-            show_help
-            exit 0
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            echo "Invalid option: $1"
-            show_help
+    --cm)
+        color_mode="$2"
+        if [ "$color_mode" != "temp" ] && [ "$color_mode" != "gamma" ]; then
+            echo "Error: Color mode must be 'temp' or 'gamma'"
             exit 1
-            ;;
+        fi
+        shift 2
+        ;;
+    -i | --increase)
+        action="increase"
+        custom_step="$2"
+        shift 2
+        ;;
+    -d | --decrease)
+        action="decrease"
+        custom_step="$2"
+        shift 2
+        ;;
+    -s | --set)
+        action="set"
+        custom_step="$2"
+        shift 2
+        ;;
+    -r | --read)
+        action="read"
+        shift
+        ;;
+    -t | --toggle)
+        action="toggle"
+        shift
+        ;;
+    -q | --quiet)
+        notify=false
+        shift
+        ;;
+    -P | --sigproc)
+        signal_proc="$2"
+        shift 2
+        ;;
+    -h | --help)
+        show_help
+        exit 0
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        echo "Invalid option: $1"
+        show_help
+        exit 1
+        ;;
     esac
 done
 if [ -n "$custom_step" ]; then
@@ -190,10 +209,13 @@ if [ -n "$custom_step" ]; then
                 exit 1
             fi
         else
-            if [[ $custom_step =~ ^[0-9]+$ ]] && [ "$custom_step" -ge "$min_temp" ] && [ "$custom_step" -le "$max_temp" ]; then
+            if [ "$custom_step" = "identity" ]; then
+                newTemp="$identity_temp"
+                identity_requested=true
+            elif [[ $custom_step =~ ^[0-9]+$ ]] && [ "$custom_step" -ge "$min_temp" ] && [ "$custom_step" -le "$max_temp" ]; then
                 newTemp="$custom_step"
             else
-                echo "Error: Temperature must be an integer between $min_temp and $max_temp"
+                echo "Error: Temperature must be a number between $min_temp and $max_temp, or 'identity'"
                 exit 1
             fi
         fi
@@ -241,52 +263,46 @@ if [ -z "$action" ]; then
     exit 1
 fi
 case $action in
-    increase)
-        if
-            [ "$color_mode" = "gamma" ]
-        then
-            newGamma=$(clamp_gamma "$((currentGamma + gamma_step))")
-            printf "%d|%d|%d\n" "$currentTemp" "$newGamma" "$toggle_mode" > "$sunsetConf"
-            currentGamma="$newGamma"
-        else
-            newTemp=$(clamp_temp "$((currentTemp + temp_step))")
-            printf "%d|%d|%d\n" "$newTemp" "$currentGamma" "$toggle_mode" > "$sunsetConf"
-            currentTemp="$newTemp"
-        fi
-        ;;
-    decrease)
-        if
-            [ "$color_mode" = "gamma" ]
-        then
-            newGamma=$(clamp_gamma "$((currentGamma - gamma_step))")
-            printf "%d|%d|%d\n" "$currentTemp" "$newGamma" "$toggle_mode" > "$sunsetConf"
-            currentGamma="$newGamma"
-        else
-            newTemp=$(clamp_temp "$((currentTemp - temp_step))")
-            printf "%d|%d|%d\n" "$newTemp" "$currentGamma" "$toggle_mode" > "$sunsetConf"
-            currentTemp="$newTemp"
-        fi
-        ;;
-    set)
-        if
-            [ "$color_mode" = "gamma" ]
-        then
-            printf "%d|%d|%d\n" "$currentTemp" "$newGamma" "$toggle_mode" > "$sunsetConf"
-            currentGamma="$newGamma"
-        else
-            printf "%d|%d|%d\n" "$newTemp" "$currentGamma" "$toggle_mode" > "$sunsetConf"
-            currentTemp="$newTemp"
-        fi
-        ;;
-    read) ;;
-    toggle)
-        toggle_mode=$((1 - toggle_mode))
-        printf "%d|%d|%d\n" "$currentTemp" "$currentGamma" "$toggle_mode" > "$sunsetConf"
-        ;;
+increase)
+    if [ "$color_mode" = "gamma" ]; then
+        newGamma=$(clamp_gamma "$((currentGamma + gamma_step))")
+        currentGamma="$newGamma"
+        save_state
+    else
+        newTemp=$(clamp_temp "$((currentTemp + temp_step))")
+        currentTemp="$newTemp"
+        save_state
+    fi
+    ;;
+decrease)
+    if [ "$color_mode" = "gamma" ]; then
+        newGamma=$(clamp_gamma "$((currentGamma - gamma_step))")
+        currentGamma="$newGamma"
+        save_state
+    else
+        newTemp=$(clamp_temp "$((currentTemp - temp_step))")
+        currentTemp="$newTemp"
+        save_state
+    fi
+    ;;
+set)
+    if [ "$color_mode" = "gamma" ]; then
+        currentGamma="$newGamma"
+        save_state
+    else
+        currentTemp="$newTemp"
+        save_state
+    fi
+    ;;
+read) ;;
+toggle)
+    toggle_mode=$((1 - toggle_mode))
+    save_state
+    ;;
 esac
 [ "$notify" = true ] && send_notification
 send_signal_to_process
-if ! pgrep -x "hyprsunset" > /dev/null; then
+if ! pgrep -x "hyprsunset" >/dev/null; then
     if [ -f "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.hyprsunset.sock" ]; then
         rm "$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.hyprsunset.sock"
     fi
@@ -294,23 +310,32 @@ if ! pgrep -x "hyprsunset" > /dev/null; then
 fi
 if [ "$action" = "read" ]; then
     if [ "$toggle_mode" -eq 1 ]; then
-        current_running_temp=$(hyprctl hyprsunset temperature)
-        if [ "$current_running_temp" != "$currentTemp" ]; then
-            hyprctl --quiet hyprsunset temperature "$currentTemp"
+        if [ "$identity_requested" = true ]; then
+            hyprctl --quiet hyprsunset identity
+            hyprctl --quiet hyprsunset gamma "$currentGamma"
+        else
+            apply_temp "$currentTemp"
+            hyprctl --quiet hyprsunset gamma "$currentGamma"
         fi
+    else
+        hyprctl --quiet hyprsunset identity
+        hyprctl --quiet hyprsunset gamma "$default_gamma"
     fi
 else
     if [ "$toggle_mode" -eq 0 ]; then
         hyprctl --quiet hyprsunset identity
         hyprctl --quiet hyprsunset gamma "$default_gamma"
     else
-        if [ "$color_mode" = "gamma" ] && [ -n "$newGamma" ]; then
-            hyprctl --quiet hyprsunset temperature "$currentTemp"
+        if [ "$identity_requested" = true ]; then
+            hyprctl --quiet hyprsunset identity
+            hyprctl --quiet hyprsunset gamma "$currentGamma"
+        elif [ "$color_mode" = "gamma" ] && [ -n "$newGamma" ]; then
+            apply_temp "$currentTemp"
             hyprctl --quiet hyprsunset gamma "$newGamma"
         elif [ -n "$newTemp" ]; then
-            hyprctl --quiet hyprsunset temperature "$newTemp"
+            apply_temp "$newTemp"
         else
-            hyprctl --quiet hyprsunset temperature "$currentTemp"
+            apply_temp "$currentTemp"
             hyprctl --quiet hyprsunset gamma "$currentGamma"
         fi
     fi
@@ -318,14 +343,14 @@ fi
 get_temp_color() {
     local temp=$1
     declare -A temp_colors=(
-             [10000]="#8b0000"
-             [8000]="#ff6347"
-             [6500]=""
-             [5000]="#ffa500"
-             [4000]="#ff8c00"
-             [3000]="#ff471a"
-             [2000]="#d22f2f"
-             [1000]="#ad1f2f")
+        [10000]="#8b0000"
+        [8000]="#ff6347"
+        [6500]=""
+        [5000]="#ffa500"
+        [4000]="#ff8c00"
+        [3000]="#ff471a"
+        [2000]="#d22f2f"
+        [1000]="#ad1f2f")
     for threshold in $(echo "${!temp_colors[@]}" | tr ' ' '\n' | sort -nr); do
         if ((temp >= threshold)); then
             color=${temp_colors[$threshold]}
@@ -341,11 +366,11 @@ get_temp_color() {
 get_gamma_color() {
     local gamma=$1
     declare -A gamma_colors=(
-             [90]="#00ff00"
-             [70]="#90ee90"
-             [50]=""
-             [30]="#ffa500"
-             [20]="#ff6347")
+        [90]="#00ff00"
+        [70]="#90ee90"
+        [50]=""
+        [30]="#ffa500"
+        [20]="#ff6347")
     for threshold in $(echo "${!gamma_colors[@]}" | tr ' ' '\n' | sort -nr); do
         if ((gamma >= threshold)); then
             color=${gamma_colors[$threshold]}
@@ -359,17 +384,7 @@ get_gamma_color() {
     done
 }
 get_temp_status() {
-    local current_running_temp
-    current_running_temp=$(get_running_temp)
-    if [ "$toggle_mode" -eq 1 ]; then
-        if [ "$current_running_temp" = "$default_temp" ]; then
-            echo "Identity"
-        else
-            echo "${current_running_temp}K"
-        fi
-    else
-        echo "Identity"
-    fi
+    echo "${currentTemp}K"
 }
 get_gamma_status() {
     printf "%d" "$currentGamma"
@@ -379,8 +394,7 @@ get_saved_temp_status() {
 }
 generate_status() {
     local text_output alt_text tooltip_text
-    local temp_colored gamma_colored current_running_temp
-    current_running_temp=$(get_running_temp)
+    local temp_colored gamma_colored
     if [ "$toggle_mode" -eq 1 ]; then
         text_output="󰈈"
         alt_text="active"
@@ -389,7 +403,7 @@ generate_status() {
         alt_text="inactive"
     fi
     if [ "$toggle_mode" -eq 1 ]; then
-        temp_colored=$(get_temp_color "$current_running_temp")
+        temp_colored=$(get_temp_color "$currentTemp")
         gamma_colored=$(get_gamma_color "$currentGamma")
         tooltip_text="󰈈 <b>Hyprsunset Active</b>\n"
         tooltip_text+="󰔄 Temperature: $temp_colored\n"
@@ -404,7 +418,7 @@ generate_status() {
         tooltip_text+="󰍉 Gamma: $saved_gamma_colored\n"
         tooltip_text+="\n<i>󰀨 Click to activate with saved settings</i>"
     fi
-    cat << JSON
+    cat <<JSON
 {"text":"$text_output", "alt":"$alt_text", "tooltip":"$tooltip_text"}
 JSON
 }

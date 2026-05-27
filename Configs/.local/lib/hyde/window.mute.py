@@ -8,10 +8,6 @@ import subprocess
 import sys
 from functools import lru_cache
 from typing import Any
-
-lib_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, lib_dir)
-
 from pyutils.compositor import HyprctlWrapper
 
 
@@ -100,18 +96,12 @@ def _mute_sink_inputs_pulsectl(sink_ids: list[int], want_mute: bool) -> tuple[in
     return errors, failed_id
 
 
-def _pulse_connect() -> Any:
+def _pulse_connect() -> Any | None:
     """Lazy-import pulsectl and return a connection, or None."""
     try:
         import pulsectl
     except ImportError:
-        try:
-            import pyutils.pip_env as pip_env
-
-            pip_env.v_import("pulsectl")
-            import pulsectl
-        except Exception:
-            return None
+        return None
     try:
         return pulsectl.Pulse("window-mute")
     except Exception:

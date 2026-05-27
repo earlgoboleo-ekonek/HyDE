@@ -40,7 +40,7 @@ type      = "object"
 [properties.wallpaper.properties.backend]
     default     = "awww"
     description = "Wallpaper backend, requires 'wallpaper.<backend>.sh' as handler script in $PATH"
-    options     = [ "awww", "swww", "pcmanfm-qt", "mpvpaper", "hyprpaper" ]
+    options     = [ "awww", "swww", "pcmanfm-qt", "mpvpaper", "hyprpaper", "waydeeper" ]
     type        = "string"
 
 [properties.wallpaper.properties.awww]
@@ -72,6 +72,67 @@ type      = "object"
     description = "Transition type for default wallpaper."
     type        = "string"
 
+[properties.wallpaper.properties.waydeeper]
+    description = "waydeeper 3D parallax wallpaper configuration."
+    type        = "object"
+
+[properties.wallpaper.properties.waydeeper.properties.strength]
+    default     = 0.02
+    description = "Sets both X & Y parallax strength."
+    type        = "number"
+
+[properties.wallpaper.properties.waydeeper.properties.strength_x]
+    default     = 0.02
+    description = "X-axis parallax strength."
+    type        = "number"
+
+[properties.wallpaper.properties.waydeeper.properties.strength_y]
+    default     = 0.02
+    description = "Y-axis parallax strength."
+    type        = "number"
+
+[properties.wallpaper.properties.waydeeper.properties.smooth_animation]
+    default     = true
+    description = "Enables smooth easing for animation."
+    type        = "boolean"
+
+[properties.wallpaper.properties.waydeeper.properties.animation_speed]
+    default     = 0.05
+    description = "Animation speed multiplier."
+    type        = "number"
+
+[properties.wallpaper.properties.waydeeper.properties.fps]
+    default     = 60
+    description = "Frame rate (30 or 60)."
+    options     = [ 30, 60 ]
+    type        = "integer"
+
+[properties.wallpaper.properties.waydeeper.properties.active_delay]
+    default     = 150
+    description = "Delay (ms) before animation starts after mouse enters wallpaper surface."
+    type        = "integer"
+
+[properties.wallpaper.properties.waydeeper.properties.idle_timeout]
+    default     = 5000
+    description = "Stops animation (ms) after mouse idle."
+    type        = "integer"
+
+[properties.wallpaper.properties.waydeeper.properties.invert_depth]
+    default     = false
+    description = "Inverts depth interpretation."
+    type        = "boolean"
+
+[properties.wallpaper.properties.waydeeper.properties.model]
+    default     = "depth-anything-v3-base"
+    description = "ONNX depth model: depth-anything-v3-base, midas-small, depth-pro-q4."
+    options     = [ "depth-anything-v3-base", "midas-small", "depth-pro-q4" ]
+    type        = "string"
+
+[properties.wallpaper.properties.waydeeper.properties.regenerate]
+    default     = false
+    description = "Forces regeneration of depth maps & meshes."
+    type        = "boolean"
+
 [properties.rofi]
     description = "Global rofi configuration."
     type        = "object"
@@ -82,7 +143,7 @@ type      = "object"
     type        = "integer"
 
 [properties.rofi.properties.hyprlock]
-    description = "'hyprlock.sh select' configuration."
+    description = "'hyde-shell hyprlock select' configuration."
     type        = "object"
 
 [properties.rofi.properties.hyprlock.properties.scale]
@@ -754,6 +815,47 @@ type      = "object"
 [properties.sysmonitor.properties.commands.items]
     type = "string"
 
+[properties.hyprlock]
+    description = "hyprlock configuration."
+    type        = "object"
+
+[properties.hyprlock.properties.hide_cursor]
+    default     = false
+    description = "Hides the cursor instead of making it visible."
+    type        = "boolean"
+
+[properties.hyprlock.properties.ignore_empty_input]
+    default     = false
+    description = "Skips validation when no password is provided."
+    type        = "boolean"
+
+[properties.hyprlock.properties.immediate_render]
+    default     = false
+    description = "Makes hyprlock immediately start to draw widgets."
+    type        = "boolean"
+
+[properties.hyprlock.properties.text_trim]
+    default     = true
+    description = "Sets if the text should be trimmed, useful to avoid trailing newline in commands output."
+    type        = "boolean"
+
+[properties.hyprlock.properties.fractional_scaling]
+    default     = 2
+    description = "Whether to use fractional scaling. 0: disabled, 1: enabled, 2: auto."
+    options     = [ 0, 1, 2 ]
+    type        = "integer"
+
+[properties.hyprlock.properties.screencopy_mode]
+    default     = 0
+    description = "Selects screencopy mode: 0 gpu accelerated, 1 cpu based (slow)."
+    options     = [ 0, 1 ]
+    type        = "integer"
+
+[properties.hyprlock.properties.fail_timeout]
+    default     = 2000
+    description = "Milliseconds until the UI resets after a failed auth attempt."
+    type        = "integer"
+
 [properties.notification]
     description = "Notification script configuration."
     type        = "object"
@@ -785,16 +887,6 @@ type      = "object"
 [properties.hyprland.properties.explorer]
     default     = "dolphin"
     description = "File manager."
-    type        = "string"
-
-[properties.hyprland.properties.idle]
-    default     = "hypridle"
-    description = "Idle manager."
-    type        = "string"
-
-[properties.hyprland.properties.blue_light_filter]
-    default     = "hyprsunset"
-    description = "Blue-light filter."
     type        = "string"
 
 [properties.hyprland.properties.lockscreen]
@@ -887,6 +979,115 @@ type      = "object"
     description = "LockScreen's Background path."
     type        = "string"
 
+[properties.desktop]
+    description = "Generic desktop/compositor configuration. Compositor-agnostic counterpart to [hyprland]; use this for cross-compositor support (Hyprland, Sway, niri, etc.)."
+    type        = "object"
+
+[properties.desktop.properties.browser]
+    default     = "firefox"
+    description = "Default browser."
+    type        = "string"
+
+[properties.desktop.properties.editor]
+    default     = "code"
+    description = "Default editor."
+    type        = "string"
+
+[properties.desktop.properties.explorer]
+    default     = "dolphin"
+    description = "Default file manager."
+    type        = "string"
+
+[properties.desktop.properties.lockscreen]
+    default     = "lockscreen.sh"
+    description = "Lockscreen command."
+    type        = "string"
+
+[properties.desktop.properties.terminal]
+    default     = "kitty"
+    description = "Default terminal."
+    type        = "string"
+
+[properties.desktop.properties.quickapps]
+    default     = "kitty"
+    description = "Quick apps command."
+    type        = "string"
+
+[properties.desktop.properties.bar]
+    default     = "waybar"
+    description = "Status bar."
+    type        = "string"
+
+[properties.desktop.properties.color_scheme]
+    default     = "prefer-dark"
+    description = "Color scheme."
+    type        = "string"
+
+[properties.desktop.properties.gtk_theme]
+    default     = "Wallbash-Gtk"
+    description = "GTK theme."
+    type        = "string"
+
+[properties.desktop.properties.icon_theme]
+    default     = "Tela-circle-dracula"
+    description = "Icon theme."
+    type        = "string"
+
+[properties.desktop.properties.cursor_size]
+    default     = 24
+    description = "Cursor size."
+    type        = "integer"
+
+[properties.desktop.properties.cursor_theme]
+    default     = "Bibata-Modern-Ice"
+    description = "Cursor theme."
+    type        = "string"
+
+[properties.desktop.properties.button_layout]
+    default     = ""
+    description = "Button layout. (gtk only)"
+    type        = "string"
+
+[properties.desktop.properties.document_font_size]
+    default     = 10
+    description = "Document font size."
+    type        = "integer"
+
+[properties.desktop.properties.font]
+    default     = "Canterell"
+    description = "Default font."
+    type        = "string"
+
+[properties.desktop.properties.font_antialiasing]
+    default     = "rgba"
+    description = "Font antialiasing."
+    type        = "string"
+
+[properties.desktop.properties.font_hinting]
+    default     = "full"
+    description = "Font hinting."
+    type        = "string"
+
+[properties.desktop.properties.font_size]
+    default     = 10
+    description = "Font size."
+    type        = "integer"
+
+[properties.desktop.properties.monospace_font]
+    default     = "CaskaydiaCove Nerd Font Mono"
+    description = "Monospace font."
+    type        = "string"
+
+[properties.desktop.properties.monospace_font_size]
+    default     = 9
+    description = "Monospace font size."
+    type        = "integer"
+
+[properties.desktop.properties.background_path]
+    default     = ""
+    description = "Lockscreen background path."
+    type        = "string"
+
 [properties.qt5]
     description = "Qt5 configuration."
     type        = "object"
@@ -961,77 +1162,168 @@ type      = "object"
     description = "Hyprland start configuration."
     type        = "object"
 
-[properties.hyprland-start.properties.apptray_bluetooth]
-    default     = "blueman-applet"
-    description = "Bluetooth applet."
-    type        = "string"
-
-[properties.hyprland-start.properties.auth_dialogue]
-    default     = "polkitkdeauth.sh"
-    description = "Authentication dialogue."
-    type        = "string"
-
-[properties.hyprland-start.properties.bar]
-    default     = "hyde-shell waybar --watch"
-    description = "Bar."
-    type        = "string"
-
-[properties.hyprland-start.properties.battery_notify]
-    default     = "batterynotify.sh"
-    description = "Battery notification script."
-    type        = "string"
-
 [properties.hyprland-start.properties.dbus_share_picker]
-    default     = "dbus-update-activation-environment --systemd --all"
+    default     = "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME"
     description = "DBus share picker."
     type        = "string"
 
-[properties.hyprland-start.properties.idle_daemon]
-    default     = "hypridle"
-    description = "Idle daemon."
-    type        = "string"
-[properties.hyprland-start.properties.blue_light_filter_daemon]
-    default     = "hyprsunset"
-    description = "Blue-light filter daemon."
-    type        = "string"
-[properties.hyprland-start.properties.image_clipboard]
-    default     = "wl-paste --type image --watch cliphist store"
-    description = "Image clipboard."
-    type        = "string"
-
-[properties.hyprland-start.properties.network_manager]
-    default     = "nm-applet --indicator"
-    description = "Network manager."
-    type        = "string"
-
-[properties.hyprland-start.properties.notifications]
-    default     = "swaync"
-    description = "Notifications."
-    type        = "string"
-
-[properties.hyprland-start.properties.removable_media]
-    default     = "udiskie --no-automount --smart-tray"
-    description = "Removable media manager."
-    type        = "string"
-
 [properties.hyprland-start.properties.systemd_share_picker]
-    default     = "systemctl --user import-environment QT_QPA_PLATFORMTHEME WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+    default     = "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME"
     description = "Systemd share picker."
     type        = "string"
 
+[properties.hyprland-start.properties.xdg_portal_reset]
+    default     = "hyde-shell resetxdgportal.sh"
+    description = "XDG portal reset script."
+    type        = "string"
+
+[properties.hyprland-start.properties.auth_dialogue]
+    default     = "hyde-shell app -t service -- polkitkdeauth.sh"
+    description = "Authentication dialogue."
+    type        = "string"
+
+[properties.hyprland-start.properties.idle_daemon]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle"
+    description = "Idle daemon."
+    type        = "string"
+
+[properties.hyprland-start.properties.blue_light_filter_daemon]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset"
+    description = "Blue-light filter daemon."
+    type        = "string"
+
 [properties.hyprland-start.properties.text_clipboard]
-    default     = "wl-paste --type text --watch cliphist store"
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store"
     description = "Text clipboard."
     type        = "string"
 
+[properties.hyprland-start.properties.image_clipboard]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store"
+    description = "Image clipboard."
+    type        = "string"
+
+[properties.hyprland-start.properties.clipboard_persist]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular"
+    description = "Clipboard persist daemon."
+    type        = "string"
+
 [properties.hyprland-start.properties.wallpaper]
-    default     = "$scrPath/wallpaper.sh --global"
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global"
     description = "Wallpaper script."
     type        = "string"
 
-[properties.hyprland-start.properties.xdg_portal_reset]
-    default     = "resetxdgportal.sh"
+[properties.hyprland-start.properties.bar]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch"
+    description = "Bar."
+    type        = "string"
+
+[properties.hyprland-start.properties.notifications]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst"
+    description = "Notifications."
+    type        = "string"
+
+[properties.hyprland-start.properties.battery_notify]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh"
+    description = "Battery notification script."
+    type        = "string"
+
+[properties.hyprland-start.properties.applet_network_manager]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator"
+    description = "Network manager."
+    type        = "string"
+
+[properties.hyprland-start.properties.applet_removable_media]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray"
+    description = "Removable media manager."
+    type        = "string"
+
+[properties.hyprland-start.properties.applet_bluetooth]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet"
+    description = "Bluetooth applet."
+    type        = "string"
+
+[properties."desktop.start"]
+    description = "Generic desktop autostart configuration. Compositor-agnostic counterpart to [hyprland-start]; use this for cross-compositor support (Hyprland, Sway, niri, etc.)."
+    type        = "object"
+
+[properties."desktop.start".properties.dbus_share_picker]
+    default     = "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME"
+    description = "DBus share picker (for XDG portal / XDPH)."
+    type        = "string"
+
+[properties."desktop.start".properties.systemd_share_picker]
+    default     = "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP XDG_CONFIG_HOME QT_QPA_PLATFORMTHEME"
+    description = "Systemd share picker (for XDG portal / XDPH)."
+    type        = "string"
+
+[properties."desktop.start".properties.xdg_portal_reset]
+    default     = "hyde-shell resetxdgportal.sh"
     description = "XDG portal reset script."
+    type        = "string"
+
+[properties."desktop.start".properties.auth_dialogue]
+    default     = "hyde-shell app -t service -- polkitkdeauth.sh"
+    description = "Authentication dialogue."
+    type        = "string"
+
+[properties."desktop.start".properties.idle_daemon]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-idle.service -t service -- hypridle"
+    description = "Idle daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.blue_light_filter_daemon]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-blue-light-filter.service -t service -- hyprsunset"
+    description = "Blue-light filter daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.text_clipboard]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-text-clipboard.service -t service wl-paste --type text --watch cliphist store"
+    description = "Text clipboard daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.image_clipboard]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-image-clipboard.service -t service wl-paste --type image --watch cliphist store"
+    description = "Image clipboard daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.clipboard_persist]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-clipboard-persist.service -t service wl-clip-persist --clipboard regular"
+    description = "Clipboard persist daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.wallpaper]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-wallpaper.service -t service -- wallpaper.sh --start --global"
+    description = "Wallpaper script."
+    type        = "string"
+
+[properties."desktop.start".properties.bar]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bar.scope -t scope -- waybar.py --watch"
+    description = "Bar."
+    type        = "string"
+
+[properties."desktop.start".properties.notifications]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-notifications.service -t service -- dunst"
+    description = "Notification daemon."
+    type        = "string"
+
+[properties."desktop.start".properties.battery_notify]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-battery-notify.service -t service -- batterynotify.sh"
+    description = "Battery notification script."
+    type        = "string"
+
+[properties."desktop.start".properties.applet_network_manager]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-network-manager-applet.service -t service -- nm-applet --indicator"
+    description = "Network manager applet."
+    type        = "string"
+
+[properties."desktop.start".properties.applet_removable_media]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-removable-media-applet.service -t service -- udiskie --no-automount --smart-tray"
+    description = "Removable media applet."
+    type        = "string"
+
+[properties."desktop.start".properties.applet_bluetooth]
+    default     = "hyde-shell app -u hyde-$XDG_SESSION_DESKTOP-bluetooth-applet.service -t service -- blueman-applet"
+    description = "Bluetooth applet."
     type        = "string"
 
 [properties.mediaplayer]
